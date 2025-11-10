@@ -32,9 +32,9 @@ git clone https://github.com/your-username/meucurriculo.git
 
 In the root of your project, create a file named `.env` with the following content:
 
-POSTGRES_USER=username-postgres
-POSTGRES_PASSWORD=password-postgres
-POSTGRES_DB=database-postgres
+POSTGRES_USER=username-postgres  
+POSTGRES_PASSWORD=password-postgres  
+POSTGRES_DB=database-postgres  
 
 💡 This file stores your PostgreSQL credentials safely and keeps them out of version control (remember to add `.env` to your `.gitignore`).
 
