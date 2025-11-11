@@ -1,0 +1,61 @@
+name: CI do Backend
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - 'backend-java/**'
+      - '.github/workflows/**'
+  pull_request:
+    paths:
+      - 'backend-java/**'
+      - '.github/workflows/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: dbtest
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd="pg_isready -U postgres -d dbtest"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21 (Temurin) + Maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Esperar Postgres responder
+        run: |
+          for i in {1..30}; do
+            pg_isready -h 127.0.0.1 -p 5432 -U postgres -d dbtest && break
+            echo "Aguardando Postgres ($i/30)..."
+            sleep 2
+          done
+
+      - name: Build & Tests (Maven verify)
+        working-directory: backend-java
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://127.0.0.1:5432/dbtest
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+          SPRING_PROFILES_ACTIVE: test
+          MAVEN_OPTS: -Dorg.slf4j.simpleLogger.showDateTime=true
+        run: |
+          ./mvnw -B -U --no-transfer-progress clean verify

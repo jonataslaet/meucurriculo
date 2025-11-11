@@ -2,7 +2,7 @@ services:
 
   postgres-server:
     container_name: meucurriculo-postgres-server
-    image: 'postgres'
+    image: 'postgres:18'
     ports:
       - 5432:5432
     environment:
