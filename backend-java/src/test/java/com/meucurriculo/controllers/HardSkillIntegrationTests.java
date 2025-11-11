@@ -82,4 +82,66 @@ public class HardSkillIntegrationTests extends BaseHttpIntegrationTests {
         assertThat(list).isNotEmpty();
         assertThat(response.getBody()).contains("Java", "Spring");
     }
+
+    @Test
+    @Order(4)
+    void updateHardSkill_shouldPersistChanges() throws Exception {
+        // arrange create
+        var created = client().create(HardSkillFactory.javaSkill(), jsonHeaders());
+        Map<String, Object> dto = objectMapper.readValue(created.getBody(), new TypeReference<Map<String, Object>>() {});
+        long id = ((Number) dto.get("id")).longValue();
+
+        var update = new HardSkillInputDTO("Updated Skill");
+        var entity = new org.springframework.http.HttpEntity<>(update, jsonHeaders());
+        ResponseEntity<String> response = rest.exchange(baseUrl("/hardskills/" + id), HttpMethod.PUT, entity, String.class);
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).contains("Updated Skill");
+    }
+
+    @Test
+    @Order(5)
+    void updateHardSkill_shouldReturn404_whenNotExists() {
+        var update = new HardSkillInputDTO("Anything");
+        var entity = new org.springframework.http.HttpEntity<>(update, jsonHeaders());
+        long unknownId = 999999L;
+        ResponseEntity<String> response = rest.exchange(baseUrl("/hardskills/" + unknownId), HttpMethod.PUT, entity, String.class);
+        assertThat(response.getStatusCode().value()).isEqualTo(404);
+        assertThat(response.getBody()).contains("\"status\":404");
+    }
+
+    @Test
+    @Order(6)
+    void updateHardSkill_shouldReturn422_whenNameBlank() throws Exception {
+        var created = client().create(HardSkillFactory.springSkill(), jsonHeaders());
+        long id = ((Number) objectMapper.readValue(created.getBody(), new TypeReference<Map<String, Object>>() {})
+                .get("id")).longValue();
+        var invalid = HardSkillFactory.blankNameSkill();
+        var entity = new org.springframework.http.HttpEntity<>(invalid, jsonHeaders());
+        ResponseEntity<String> response = rest.exchange(baseUrl("/hardskills/" + id), HttpMethod.PUT, entity, String.class);
+        assertThat(response.getStatusCode().value()).isEqualTo(422);
+        assertThat(response.getBody()).contains("\"error\":\"Erro de validação\"", "\"name\":\"name\"");
+    }
+
+    @Test
+    @Order(7)
+    void deleteHardSkill_shouldReturn204_andRemoveEntity() throws Exception {
+        var created = client().create(HardSkillFactory.springSkill(), jsonHeaders());
+        long id = ((Number) objectMapper.readValue(created.getBody(), new TypeReference<Map<String, Object>>() {})
+                .get("id")).longValue();
+        ResponseEntity<Void> response = rest.exchange(baseUrl("/hardskills/" + id), HttpMethod.DELETE, new org.springframework.http.HttpEntity<>(jsonHeaders()), Void.class);
+        assertThat(response.getStatusCode().value()).isEqualTo(204);
+
+        ResponseEntity<String> after = rest.getForEntity(baseUrl("/hardskills/" + id), String.class);
+        assertThat(after.getStatusCode().value()).isEqualTo(404);
+    }
+
+    @Test
+    @Order(8)
+    void deleteHardSkill_shouldReturn404_whenNotExists() {
+        long unknownId = 123456L;
+        ResponseEntity<String> response = rest.exchange(baseUrl("/hardskills/" + unknownId), HttpMethod.DELETE, new org.springframework.http.HttpEntity<>(jsonHeaders()), String.class);
+        assertThat(response.getStatusCode().value()).isEqualTo(404);
+        assertThat(response.getBody()).contains("\"status\":404");
+    }
 }
