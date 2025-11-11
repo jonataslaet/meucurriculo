@@ -49,6 +49,10 @@ jobs:
             sleep 2
           done
 
+      - name: Make mvnw executable
+        working-directory: backend-java
+        run: chmod +x mvnw
+
       - name: Build & Tests (Maven verify)
         working-directory: backend-java
         env:
@@ -58,4 +62,5 @@ jobs:
           SPRING_PROFILES_ACTIVE: test
           MAVEN_OPTS: -Dorg.slf4j.simpleLogger.showDateTime=true
         run: |
+          chmod +x mvnw
           ./mvnw -B -U --no-transfer-progress clean verify
