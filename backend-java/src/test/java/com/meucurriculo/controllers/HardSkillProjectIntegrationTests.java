@@ -56,6 +56,66 @@ public class HardSkillProjectIntegrationTests extends BaseHttpIntegrationTests {
     }
 
     @Test
+    void getAllPagedHardSkillExperiences_shouldReturnEmpty_whenNoData() {
+        ResponseEntity<String> response = rest.getForEntity(baseUrl("/projects/hardskills?name=Java"), String.class);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        Map<String,Object> page = readJson(response.getBody());
+        assertThat(((Number) page.get("totalElements")).longValue()).isZero();
+        assertThat((List<?>) page.get("content")).isEmpty();
+    }
+
+    @Test
+    void getAllPagedHardSkillExperiences_shouldAggregateAndSortByMonthsDesc() throws Exception {
+        Long p1 = createProject();
+        Long p2 = createProject();
+
+        // Create HardSkills
+        var javaResp = rest.postForEntity(baseUrl("/hardskills"), new HttpEntity<>(
+                new com.meucurriculo.controllers.dtos.HardSkillInputDTO("Java"), jsonHeaders()), String.class);
+        var kotlinResp = rest.postForEntity(baseUrl("/hardskills"), new HttpEntity<>(
+                new com.meucurriculo.controllers.dtos.HardSkillInputDTO("Kotlin"), jsonHeaders()), String.class);
+        Long javaId = ((Number) readJson(javaResp.getBody()).get("id")).longValue();
+        Long kotlinId = ((Number) readJson(kotlinResp.getBody()).get("id")).longValue();
+
+        // Java: 2 months (2024-01 -> 2024-03) + 1 month (2023-12 -> 2024-01) = 3 months total
+        client().create(p1, new HardSkillProjectInputDTO("Java work A", LocalDate.of(
+                2024,1,1), LocalDate.of(2024,3,1), javaId), jsonHeaders());
+        client().create(p2, new HardSkillProjectInputDTO("Java work B", LocalDate.of(
+                2023,12,1), LocalDate.of(2024,1,1), javaId), jsonHeaders());
+
+        // Kotlin: 1 month (2024-01 -> 2024-02)
+        client().create(p1, new HardSkillProjectInputDTO("Kotlin work", LocalDate.of(2024,1,1), LocalDate.of(2024,2,1), kotlinId), jsonHeaders());
+
+        // Call without filter to get both and verify sort by months desc (Java first)
+        ResponseEntity<String> pageResp = rest.getForEntity(baseUrl("/projects/hardskills?page=0&size=10"), String.class);
+        assertThat(pageResp.getStatusCode().is2xxSuccessful()).isTrue();
+        Map<String,Object> page = readJson(pageResp.getBody());
+        @SuppressWarnings("unchecked")
+        List<Map<String,Object>> content = (List<Map<String,Object>>) page.get("content");
+        assertThat(content).hasSizeGreaterThanOrEqualTo(2);
+
+        Map<String,Object> first = content.get(0);
+        Map<String,Object> second = content.get(1);
+
+        assertThat(first.get("hardSkillName")).isEqualTo("Java");
+        assertThat(((Number) first.get("experienceTimeInMonths")).longValue()).isEqualTo(3L);
+        // Years sum per query: (2024-2024)=0 + (2024-2023)=1 => 1
+        assertThat(((Number) first.get("experienceTimeInYears")).longValue()).isEqualTo(1L);
+
+        assertThat(second.get("hardSkillName")).isEqualTo("Kotlin");
+        assertThat(((Number) second.get("experienceTimeInMonths")).longValue()).isEqualTo(1L);
+
+        // Filtering by prefix "Ja" should return only Java
+        ResponseEntity<String> filtered = rest.getForEntity(baseUrl("/projects/hardskills?name=Ja"), String.class);
+        assertThat(filtered.getStatusCode().is2xxSuccessful()).isTrue();
+        Map<String,Object> fpage = readJson(filtered.getBody());
+        @SuppressWarnings("unchecked")
+        List<Map<String,Object>> fcontent = (List<Map<String,Object>>) fpage.get("content");
+        assertThat(fcontent).hasSize(1);
+        assertThat(fcontent.get(0).get("hardSkillName")).isEqualTo("Java");
+    }
+
+    @Test
     void createHardSkillProject_shouldPersist() {
     Long projectId = createProject();
     Long hardSkillId = createHardSkill();
