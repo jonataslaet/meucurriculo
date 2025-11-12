@@ -2,3 +2,7 @@ spring:
   web:
     locale: pt_BR
     locale-resolver: fixed
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop

@@ -148,7 +148,7 @@ public class HardSkillProjectIntegrationTests extends BaseHttpIntegrationTests {
         String since = (String) dto.get("appliedSince");
         ResponseEntity<Void> response = rest.exchange(baseUrl("/projects/" + projectId + "/hardskills/" + pathHardSkillId + "/" + since), HttpMethod.DELETE, new HttpEntity<>(jsonHeaders()), Void.class);
         assertThat(response.getStatusCode().value()).isEqualTo(204);
-        ResponseEntity<String> after = rest.getForEntity(baseUrl("/projects/" + projectId + "/hardskills/" + pathHardSkillId + "/" + since), String.class);
+        ResponseEntity<Void> after = rest.exchange(baseUrl("/projects/" + projectId + "/hardskills/" + pathHardSkillId + "/" + since), HttpMethod.DELETE, new HttpEntity<>(jsonHeaders()), Void.class);
         assertThat(after.getStatusCode().value()).isEqualTo(404);
     }
 
