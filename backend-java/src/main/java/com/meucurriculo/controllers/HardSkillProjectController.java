@@ -1,5 +1,6 @@
 package com.meucurriculo.controllers;
 
+import com.meucurriculo.controllers.dtos.HardSkillProjectExperienceDTO;
 import com.meucurriculo.controllers.dtos.HardSkillProjectInputDTO;
 import com.meucurriculo.controllers.dtos.HardSkillProjectOutputDTO;
 import com.meucurriculo.controllers.dtos.HardSkillProjectListOutputDTO;
@@ -12,46 +13,42 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/projects/{projectId}/hardskills")
+@RequestMapping("/projects")
 public class HardSkillProjectController {
 
-    private final HardSkillProjectService service;
+    private final HardSkillProjectService hardSkillProjectService;
 
-    public HardSkillProjectController(HardSkillProjectService service) {
-        this.service = service;
+    public HardSkillProjectController(HardSkillProjectService hardSkillProjectService) {
+        this.hardSkillProjectService = hardSkillProjectService;
     }
 
-    @GetMapping
+    @GetMapping("/{projectId}/hardskills")
     public ResponseEntity<@NonNull List<HardSkillProjectListOutputDTO>> list(@PathVariable("projectId") Long projectId) {
-        return ResponseEntity.ok(service.list(projectId));
+        return ResponseEntity.ok(hardSkillProjectService.list(projectId));
     }
 
-    @PostMapping
-    public ResponseEntity<@NonNull HardSkillProjectOutputDTO> create(@PathVariable("projectId") Long projectId,
-                                                                     @Valid @RequestBody HardSkillProjectInputDTO dto) {
-        return ResponseEntity.ok(service.create(projectId, dto));
+    @PostMapping("/{projectId}/hardskills")
+    public ResponseEntity<@NonNull HardSkillProjectOutputDTO> addHardSkillExperience(
+            @PathVariable("projectId") Long projectId, @Valid @RequestBody HardSkillProjectInputDTO dto) {
+        return ResponseEntity.ok(hardSkillProjectService.addHardSkillExperience(projectId, dto));
     }
 
-    @GetMapping("/{hardSkillId}/{since}")
-    public ResponseEntity<@NonNull HardSkillProjectOutputDTO> get(@PathVariable("projectId") Long projectId,
-                                                                  @PathVariable("hardSkillId") Long hardSkillId,
-                                                                  @PathVariable("since") java.time.LocalDate since) {
-        return ResponseEntity.ok(service.getById(projectId, hardSkillId, since));
+    @PutMapping("/{projectId}/hardskills/{hardSkillId}/{since}")
+    public ResponseEntity<@NonNull HardSkillProjectOutputDTO> updateHardSkillExperience(
+            @PathVariable("projectId") Long projectId, @PathVariable("hardSkillId") Long hardSkillId,
+            @PathVariable("since") java.time.LocalDate since, @Valid @RequestBody HardSkillProjectInputDTO dto) {
+        return ResponseEntity.ok(hardSkillProjectService.updateHardSkillExperience(projectId, hardSkillId, since, dto));
     }
 
-    @PutMapping("/{hardSkillId}/{since}")
-    public ResponseEntity<@NonNull HardSkillProjectOutputDTO> update(@PathVariable("projectId") Long projectId,
-                                                                     @PathVariable("hardSkillId") Long hardSkillId,
-                                                                     @PathVariable("since") java.time.LocalDate since,
-                                                                     @Valid @RequestBody HardSkillProjectInputDTO dto) {
-        return ResponseEntity.ok(service.update(projectId, hardSkillId, since, dto));
-    }
-
-    @DeleteMapping("/{hardSkillId}/{since}")
-    public ResponseEntity<@NonNull Void> delete(@PathVariable("projectId") Long projectId,
-                                                @PathVariable("hardSkillId") Long hardSkillId,
-                                                @PathVariable("since") java.time.LocalDate since) {
-        service.delete(projectId, hardSkillId, since);
+    @DeleteMapping("/{projectId}/hardskills/{hardSkillId}/{since}")
+    public ResponseEntity<@NonNull Void> deleteHardSkillExperience(@PathVariable("projectId") Long projectId,
+        @PathVariable("hardSkillId") Long hardSkillId, @PathVariable("since") java.time.LocalDate since) {
+        hardSkillProjectService.deleteHardSkillExperience(projectId, hardSkillId, since);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/hardskills")
+    public ResponseEntity<@NonNull List<HardSkillProjectExperienceDTO>> getAllHardSkillExperiences() {
+        return ResponseEntity.ok(hardSkillProjectService.getAllHardSkillExperiences());
     }
 }

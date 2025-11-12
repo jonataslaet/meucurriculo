@@ -14,4 +14,7 @@ public interface HardSkillProjectRepository extends JpaRepository<HardSkillProje
 
     @Query("SELECT h FROM HardSkillProject h JOIN FETCH h.hardSkill WHERE h.project.id = :projectId")
     List<HardSkillProject> findAllByProjectId(@Param("projectId") Long projectId);
+
+    @Query("SELECT h FROM HardSkillProject h JOIN FETCH h.hardSkill hs")
+    List<HardSkillProject> findAll();
 }

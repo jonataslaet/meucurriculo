@@ -1,5 +1,6 @@
 package com.meucurriculo.services;
 
+import com.meucurriculo.controllers.dtos.HardSkillProjectExperienceDTO;
 import com.meucurriculo.controllers.dtos.HardSkillProjectInputDTO;
 import com.meucurriculo.controllers.dtos.HardSkillProjectOutputDTO;
 import com.meucurriculo.controllers.dtos.HardSkillProjectListOutputDTO;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -52,7 +54,7 @@ public class HardSkillProjectService {
     }
 
     @Transactional
-    public HardSkillProjectOutputDTO create(Long projectId, HardSkillProjectInputDTO dto) {
+    public HardSkillProjectOutputDTO addHardSkillExperience(Long projectId, HardSkillProjectInputDTO dto) {
         ensureProjectExists(projectId);
         Project project = projectRepository.findById(projectId).orElseThrow(() ->
                 new ResourceNotFoundException("Projeto não encontrado"));
@@ -62,16 +64,14 @@ public class HardSkillProjectService {
         return HardSkillProjectMapper.toOutputDTO(saved);
     }
 
-    public HardSkillProjectOutputDTO getById(Long projectId, Long hardSkillId, LocalDate since) {
-        ensureProjectExists(projectId);
-        HardSkillProjectId id = new HardSkillProjectId(projectId, hardSkillId, since);
-        HardSkillProject entity = hardSkillProjectRepository.findById(id).orElseThrow(() ->
-                new ResourceNotFoundException("HardSkillProject não encontrado"));
-        return HardSkillProjectMapper.toOutputDTO(entity);
+    public List<HardSkillProjectExperienceDTO> getAllHardSkillExperiences() {
+        List<HardSkillProject> hardSkills = hardSkillProjectRepository.findAll();
+        if (hardSkills.isEmpty()) return new ArrayList<>();
+        return HardSkillProjectMapper.toOutputDTO(hardSkills);
     }
 
     @Transactional
-    public HardSkillProjectOutputDTO update(Long projectId, Long hardSkillId, LocalDate since, HardSkillProjectInputDTO dto) {
+    public HardSkillProjectOutputDTO updateHardSkillExperience(Long projectId, Long hardSkillId, LocalDate since, HardSkillProjectInputDTO dto) {
         ensureProjectExists(projectId);
         HardSkillProjectId oldId = new HardSkillProjectId(projectId, hardSkillId, since);
         HardSkillProject existing = hardSkillProjectRepository.findById(oldId).orElseThrow(() ->
@@ -96,7 +96,7 @@ public class HardSkillProjectService {
     }
 
     @Transactional
-    public void delete(Long projectId, Long hardSkillId, LocalDate since) {
+    public void deleteHardSkillExperience(Long projectId, Long hardSkillId, LocalDate since) {
         ensureProjectExists(projectId);
         HardSkillProjectId id = new HardSkillProjectId(projectId, hardSkillId, since);
         HardSkillProject entity = hardSkillProjectRepository.findById(id).orElseThrow(() ->
