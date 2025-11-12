@@ -6,4 +6,4 @@ import java.time.LocalDate;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record HardSkillProjectExperienceDTO(
-        Long hardSkillId, String hardSkillName, Integer experienceTimeInMonths, Integer experienceTimeInYears) {}
+        String hardSkillName, Long experienceTimeInMonths, Long experienceTimeInYears) {}

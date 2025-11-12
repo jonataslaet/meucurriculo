@@ -24,31 +24,6 @@ public class HardSkillProjectMapper {
         return new HardSkillProjectOutputDTO(entity.getHardSkill().getId(), entity.getDescription(), entity.getAppliedSince(), entity.getAppliedUntil());
     }
 
-    public static List<HardSkillProjectExperienceDTO> toOutputDTO(List<HardSkillProject> hardSkills) {
-        Map<String, Integer> map = new HashMap<>();
-        Map<String, Long> map2 = new HashMap<>();
-        for (HardSkillProject hardSkillProject: hardSkills) {
-            String hName = hardSkillProject.getHardSkill().getName();
-            if (!map.containsKey(hName)) {
-                map.put(hName, 0);
-                map2.put(hName, hardSkillProject.getHardSkill().getId());
-            }
-            LocalDate appliedSinceDate = hardSkillProject.getId().getAppliedSince();
-            LocalDate appliedUntilDate = hardSkillProject.getAppliedUntil() == null ?
-                    LocalDate.now() : hardSkillProject.getAppliedUntil();
-            int difference = (int) (ChronoUnit.MONTHS.between(appliedSinceDate, appliedUntilDate));
-            map.put(hName, map.getOrDefault(hName, 0) + difference);
-        }
-        List<HardSkillProjectExperienceDTO> list = new ArrayList<>();
-        for (String hardSkillName: map.keySet()) {
-            Integer a = map.get(hardSkillName) > 12 ? Math.ceilDiv(map.get(hardSkillName), 12) : null;
-            Integer b = a != null ? null : map.get(hardSkillName);
-            list.add(new HardSkillProjectExperienceDTO(map2.get(hardSkillName), hardSkillName, b, a));
-        }
-        return list;
-
-    }
-
     public static HardSkillProjectListOutputDTO toListOutputDTO(HardSkillProject entity) {
         HardSkill hs = entity.getHardSkill();
     HardSkillOutputDTO hardSkillDTO = new HardSkillOutputDTO(hs.getId(), hs.getName());

@@ -15,12 +15,18 @@ import com.meucurriculo.repositories.ProjectRepository;
 import com.meucurriculo.repositories.HardSkillRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional(readOnly = true)
@@ -64,10 +70,20 @@ public class HardSkillProjectService {
         return HardSkillProjectMapper.toOutputDTO(saved);
     }
 
-    public List<HardSkillProjectExperienceDTO> getAllHardSkillExperiences() {
-        List<HardSkillProject> hardSkills = hardSkillProjectRepository.findAll();
-        if (hardSkills.isEmpty()) return new ArrayList<>();
-        return HardSkillProjectMapper.toOutputDTO(hardSkills);
+    public Page<HardSkillProjectExperienceDTO> getAllPagedProjectExperiences(String name, Pageable pageable) {
+        String filter = (name == null) ? "" : name.trim();
+        Page<HardSkillProjectExperienceDTO> page = hardSkillProjectRepository.findProjectExperiencesStartingWith(filter, pageable);
+
+        List<HardSkillProjectExperienceDTO> sorted =
+                page.getContent()
+                        .stream()
+                        .sorted(Comparator
+                                .comparing(HardSkillProjectExperienceDTO::experienceTimeInMonths,
+                                        Comparator.nullsLast(Comparator.reverseOrder())))
+                        .toList()
+                ;
+
+        return new PageImpl<>(sorted, pageable, page.getTotalElements());
     }
 
     @Transactional

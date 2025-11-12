@@ -20,16 +20,13 @@ import java.util.List;
 public class DatabaseService {
 
     private final ProjectRepository projectRepository;
-    private final HardSkillProjectService hardSkillProjectService;
     private final HardSkillRepository hardSkillRepository;
     private final HardSkillProjectRepository hardSkillProjectRepository;
 
     public DatabaseService(ProjectRepository projectRepository,
-                           HardSkillProjectService hardSkillProjectService,
                            HardSkillRepository hardSkillRepository,
                            HardSkillProjectRepository hardSkillProjectRepository) {
         this.projectRepository = projectRepository;
-        this.hardSkillProjectService = hardSkillProjectService;
         this.hardSkillRepository = hardSkillRepository;
         this.hardSkillProjectRepository = hardSkillProjectRepository;
     }

@@ -7,6 +7,10 @@ import com.meucurriculo.controllers.dtos.HardSkillProjectListOutputDTO;
 import com.meucurriculo.services.HardSkillProjectService;
 import jakarta.validation.Valid;
 import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,7 +52,12 @@ public class HardSkillProjectController {
     }
 
     @GetMapping("/hardskills")
-    public ResponseEntity<@NonNull List<HardSkillProjectExperienceDTO>> getAllHardSkillExperiences() {
-        return ResponseEntity.ok(hardSkillProjectService.getAllHardSkillExperiences());
+    public ResponseEntity<Page<HardSkillProjectExperienceDTO>> getAllPagedHardSkillExperiences(
+            @RequestParam(value = "name", defaultValue = "", required = false) String name,
+            @PageableDefault(sort = "name", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        Page<HardSkillProjectExperienceDTO> pagedHardSkillExperiences =
+                hardSkillProjectService.getAllPagedProjectExperiences(name, pageable);
+        return ResponseEntity.ok(pagedHardSkillExperiences);
     }
 }
